@@ -1,9 +1,10 @@
-#! /usr/bin/env python
 # -*- coding: utf-8 -*-
+#! /usr/bin/env python
 
 from __future__ import division
 import math
 import numpy as np
+import sys
 
 
 class ChineseSegmentation:
@@ -50,13 +51,14 @@ class ChineseSegmentation:
             self._inc_value(self.emit_map[this_pair[1]], this_pair[0])
 
     def _cal_prob(self):
-        # 计算emit概率的log值
+
         print "trans matrix"
         for trans in self.trans_matrix:
             print ','.join(map(lambda x: str(x), trans))
         print "init status"
         print ",".join(map(lambda x:str(x), self.init_status))
 
+        # 计算emit概率的log值
         for emit in self.emit_map:
             total_cnt = sum(emit.values())
             for key in emit.keys():
@@ -115,30 +117,44 @@ class ChineseSegmentation:
         return status
 
 
+def insert_seg_char(text, status, char=' '):
+    result = ""
+    for (c, s) in zip(text, status):
+        result += c
+        if s == 'E' or s == 'S':
+            result += char
+    return result
+
+
+def interactive_test():
+    while (True):
+        text = raw_input("")
+        text = text.decode('utf8').strip()
+        result = insert_seg_char(text, model.segment(text), '\\')
+        print result
+
+
+def segment_file(in_file, out_file):
+    lines = open(in_file).readlines()
+    with open(out_file, 'w') as target:
+        for line in lines:
+            line = line.decode('utf8').strip()
+            result = insert_seg_char(line, model.segment(line))
+            target.write(result.encode("utf8") + '\n')
+
 if __name__ == '__main__':
     train_path = "icwb2-data/training/pku_training.utf8"
     model = ChineseSegmentation()
-    # with open(train_path) as target:
-    #     for line in target.readline():
-    #         pass
-    #         # model.add_train_line(unicode(line))
     lines = open(train_path).readlines()
     for line in lines:
         model.add_train_line(line.decode('utf8').strip())
 
     model.train()
 
-    while(True):
-        text = raw_input("")
-        text = text.decode('utf8').strip()
-        status = model.segment(text)
-        result = ""
-        for (c, s) in zip(text, status):
-            result += c
-            if s == 'E' or s == 'S':
-                result += '\\'
-
-        print result
+    if len(sys.argv) == 3:
+        segment_file(sys.argv[1], sys.argv[2])
+    else:
+        interactive_test()
 
 
 
