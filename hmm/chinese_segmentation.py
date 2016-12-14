@@ -143,7 +143,7 @@ def segment_file(in_file, out_file):
             target.write(result.encode("utf8") + '\n')
 
 if __name__ == '__main__':
-    train_path = "icwb2-data/training/pku_training.utf8"
+    train_path = "../data/icwb2-data/training/pku_training.utf8"
     model = ChineseSegmentation()
     lines = open(train_path).readlines()
     for line in lines:
