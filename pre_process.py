@@ -19,3 +19,7 @@ def character_4tagging(input_file, output_file):
         output_data.write("\n")
     input_data.close()
     output_data.close()
+
+if __name__ == '__main__':
+    character_4tagging("data/icwb2-data/training/pku_training.utf8",
+                       "data/icwb2-data/training/pku_training_crf.utf8")

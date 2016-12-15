@@ -23,3 +23,4 @@ B
 """
 
 class CRFChineseSeg():
+

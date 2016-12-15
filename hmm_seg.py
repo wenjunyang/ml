@@ -25,7 +25,7 @@ class HMMChineseSeg:
         m[key] = cnt + 1
 
     def add_train_line(self, line):
-        items = filter(lambda x: len(x) > 0, line.split(" "))
+        items = filter(lambda x: len(x) > 0, line.split())
         if len(items) == 0:
             return
 
@@ -88,8 +88,7 @@ class HMMChineseSeg:
     def segment(self, line, seg_char=' '):
         if not line:
             return ""
-        path = []
-        path.append(map(lambda x: -1, self._STATUS))
+        path = [map(lambda x: -1, self._STATUS)]
         last_max = []
         for i in range(len(self._STATUS)):
             last_max.append(self.init_status[i] +
@@ -127,7 +126,7 @@ class HMMChineseSeg:
 
 
 def interactive_test():
-    while (True):
+    while True:
         text = raw_input("")
         text = text.decode('utf8').strip()
         result = model.segment(text, '\\')
