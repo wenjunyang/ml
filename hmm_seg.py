@@ -2,16 +2,17 @@
 #! /usr/bin/env python
 
 from __future__ import division
+
+import codecs
 import math
 import numpy as np
 import sys
 
 
-class ChineseSegmentation:
+class HMMChineseSeg:
 
     _STATUS = (_B, _M, _E, _S) = range(4)
     _DEFAULT_LOG_PROB = -3.14e+100
-    _STATUS_MAP = {_B: 'B', _M: 'M', _E: 'E', _S: 'S'}
 
     def __init__(self):
         self.emit_map = map(lambda x: {}, self._STATUS)
@@ -56,7 +57,7 @@ class ChineseSegmentation:
         for trans in self.trans_matrix:
             print ','.join(map(lambda x: str(x), trans))
         print "init status"
-        print ",".join(map(lambda x:str(x), self.init_status))
+        print ",".join(map(lambda x: str(x), self.init_status))
 
         # 计算emit概率的log值
         for emit in self.emit_map:
@@ -84,9 +85,9 @@ class ChineseSegmentation:
 
         self._cal_prob()
 
-    def segment(self, line):
+    def segment(self, line, seg_char=' '):
         if not line:
-            return []
+            return ""
         path = []
         path.append(map(lambda x: -1, self._STATUS))
         last_max = []
@@ -110,44 +111,42 @@ class ChineseSegmentation:
         last_index = np.argmax(last_max)
         status = []
         for i in range(len(line) - 1, -1, -1):
-            status.append(self._STATUS_MAP[last_index])
+            status.append(last_index)
             last_index = path[i][last_index]
 
         status.reverse()
-        return status
+        return self.insert_seg_char(line, status, seg_char)
 
-
-def insert_seg_char(text, status, char=' '):
-    result = ""
-    for (c, s) in zip(text, status):
-        result += c
-        if s == 'E' or s == 'S':
-            result += char
-    return result
+    def insert_seg_char(self, text, status, seg_char=' '):
+        result = ""
+        for (c, s) in zip(text, status):
+            result += c
+            if s in (self._E, self._S):
+                result += seg_char
+        return result
 
 
 def interactive_test():
     while (True):
         text = raw_input("")
         text = text.decode('utf8').strip()
-        result = insert_seg_char(text, model.segment(text), '\\')
+        result = model.segment(text, '\\')
         print result
 
 
 def segment_file(in_file, out_file):
-    lines = open(in_file).readlines()
-    with open(out_file, 'w') as target:
-        for line in lines:
-            line = line.decode('utf8').strip()
-            result = insert_seg_char(line, model.segment(line))
-            target.write(result.encode("utf8") + '\n')
+    with codecs.open(in_file, 'r', 'utf-8') as target_in, codecs.open(out_file, 'w', 'utf-8') as target_out:
+        for line in target_in.readlines():
+            result = model.segment(line.strip())
+            target_out.write(result + '\n')
 
 if __name__ == '__main__':
-    train_path = "../data/icwb2-data/training/pku_training.utf8"
-    model = ChineseSegmentation()
-    lines = open(train_path).readlines()
-    for line in lines:
-        model.add_train_line(line.decode('utf8').strip())
+    train_path = "data/icwb2-data/training/pku_training.utf8"
+    model = HMMChineseSeg()
+    with codecs.open(train_path, 'r', 'utf-8') as train_file:
+        lines = train_file.readlines()
+        for line in lines:
+            model.add_train_line(line.strip())
 
     model.train()
 
