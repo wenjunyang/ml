@@ -8,9 +8,9 @@ def character_4tagging(input_file, output_file):
     output_data = codecs.open(output_file, 'w', 'utf-8')
     cnt = 0
     for line in input_data.readlines():
-        if cnt > 0:
-            break
-        cnt += 1
+        # if cnt > 0:
+        #     break
+        # cnt += 1
         word_list = line.strip().split()
         for word in word_list:
             if len(word) == 1:

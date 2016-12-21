@@ -219,18 +219,16 @@ class CRFChineseSeg:
         for fun in self.feature_func_list:
             cur_expect = 0
             for i in range(len(observe) + 1):
-                sum_tk = 0
-                for j in range(len(self.status_list)):
-                    for k in range(len(self.status_list)):
-                        tk = fun.cal_current_feature(i, observe, self.status_list[j], self.status_list[k])
-                        sum_tk += tk
                 if i == 0:
                     alpha_vec = init_alpha
                 else:
                     alpha_vec = alpha_matrix[i-1]
-            non_normalize = np.dot(np.dot(alpha_vec, weighting_matrix[i]), beta_matrix[i])
+                for j in range(len(self.status_list)):
+                    for k in range(len(self.status_list)):
+                        tk = fun.cal_current_feature(i, observe, self.status_list[j], self.status_list[k])
+                        cur_expect += tk * alpha_vec[j] * weighting_matrix[i][j][k] * beta_matrix[i][k]
 
-            expect.append(sum_tk * non_normalize / normalize_z)
+            expect.append(cur_expect / normalize_z)
         return expect
 
     def _cal_train_matrix(self):
