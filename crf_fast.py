@@ -1,4 +1,4 @@
-#!/usr/bin/python2
+ #!/usr/bin/python2
 # -*-coding:utf-8-*-
 
 """
@@ -22,10 +22,14 @@ U09:%x[0,0]/%x[1,0]
 B
 """
 from __future__ import division
+
 import codecs
 import collections
-
 from datetime import datetime
+
+import math
+
+import numpy as np
 
 
 def current_time_str():
@@ -239,8 +243,28 @@ class CRFChineseSeg:
     def _iter_one_step(self):
         # 计算M矩阵
         for i in range(len(self.train_x)):
+            feature = {}
+            m_matrixs = []
 
-            m_start =
+            # 计算M矩阵及部位0的特征值
+            for j in range(len(self.train_x[i])):
+                cur_matrix = []
+                for pre_y in self.status_list + [FeatureFunction.STATUS_START]:
+                    cur_vec = []
+                    for cur_y in self.status_list + [FeatureFunction.STATUS_END]:
+                        non_zeros = self.feature_fun.cal_single_position(j, self.train_x[j], pre_y, cur_y)
+                        feature[(j, pre_y, cur_y)] = non_zeros
+                        value = 0
+                        for n in non_zeros:
+                            value += self.w[n]
+                        cur_vec.append(math.exp(value))
+                    cur_matrix.append(cur_vec)
+                m_matrixs.append(cur_matrix)
+
+            alpha_vecs = [map(lambda x: 0, self.status_list) + [1]]
+            for j in range(len(self.train_x[i])):
+                alpha_vecs.append()
+
 
 if __name__ == '__main__':
     model = CRFChineseSeg("data/icwb2-data/training/pku_training_crf.utf8")
